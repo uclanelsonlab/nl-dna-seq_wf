@@ -18,11 +18,16 @@ workflow {
         .fromPath(params.samples)
         .splitCsv(header: true, sep: ',')
         .map { row ->
-            tuple(row.sampleid, file(row.read1), file(row.read2))
+            def meta = [
+                id: row.sampleid,
+                single_end: false
+            ]
+            tuple(meta, [file(row.read1), file(row.read2)])
         }
         .set { read_pairs_ch }
 
-    fastp_ch = FASTP(read_pairs_ch)
+    FASTP_RESULTS = FASTP(read_pairs_ch, false, false)
+    FASTP_RESULTS.reads.view()
 }
 
 workflow.onComplete {
